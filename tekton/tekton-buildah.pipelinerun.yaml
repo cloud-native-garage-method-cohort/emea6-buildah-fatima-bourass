@@ -1,0 +1,23 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: buildah-run-
+spec:
+  serviceAccountName: build-bot
+  params:
+    - name: source-repo
+      value: https://github.com/cloud-native-garage-method-cohort/emea6-buildah-fatima-bourass
+  pipelineRef:
+    name: buildah-fatima
+  workspaces:
+    - name: pipeline-shared-data
+      volumeClaimTemplate:
+        metadata:
+          creationTimestamp: null
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi

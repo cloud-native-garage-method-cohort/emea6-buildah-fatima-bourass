@@ -1,0 +1,47 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: buildah-fatima
+spec:
+  params:
+    - description: SourcecoderepositoryURL
+      name: source-repo
+      type: string
+  workspaces:
+    - name: pipeline-shared-data
+  tasks:
+    - name: clone-repository
+      taskRef:
+        name: git-clone
+        kind: ClusterTask
+      params:
+        - name: url
+          value: "$(params.source-repo)"
+      workspaces:
+        - name: output
+          workspace: pipeline-shared-data
+    - name: run-tests
+      runAfter:
+        - clone-repository
+      taskRef:
+        name: npm
+      params:
+        - name: ARGS
+          value:
+            - install-ci-test
+      workspaces:
+        - name: source
+          workspace: pipeline-shared-data
+    - name: create-image
+      runAfter:
+        - run-tests
+      taskRef:
+        name: buildah
+        kind: ClusterTask
+      params:
+        - name: IMAGE
+          value: quay.io/fatima_zahra95/image-buildah:1
+      workspaces:
+        - name: source
+          workspace: pipeline-shared-data
